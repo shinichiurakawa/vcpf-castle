@@ -61,7 +61,11 @@ def send_mq(queue, body):
     import pika
 
     credentials = pika.PlainCredentials('rabbit_test', 'rabbit_test') if config.release else None
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host(), credentials=credentials))
+    connection = None
+    if config.release:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host(), credentials=credentials))
+    else:
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()))
     channel = connection.channel()
 
     channel.queue_declare(queue=queue)
@@ -69,7 +73,7 @@ def send_mq(queue, body):
     channel.basic_publish(exchange='',
                           routing_key=queue,  # TODO: routing_key とは？
                           body=json.dumps(body))
-    print(" [x] Sent ")
+    print(" [x] Sent ", queue, body)
     connection.close()
 
 
@@ -111,7 +115,11 @@ class MqReceiver(threading.Thread):
                 shutil.rmtree(clone_path)
             os.makedirs(clone_path)
             shell("git clone {url}".format(url=url), clone_path)
-            # send_mq("")
+            body = {
+                "path": clone_path,
+                "session": body["session"]
+            }
+            send_mq("git_scrap", body)
 
         channel.basic_consume(callback, queue='git_clone', no_ack=True)
 
