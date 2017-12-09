@@ -13,6 +13,9 @@ import pika
 import json
 import threading
 
+import config
+import sys
+
 
 def response_json(func):
     import functools
@@ -28,7 +31,7 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return """
-<form action="/clone" method="POST">
+<form action="/git/clone" method="POST">
   URL:<br>
   <input type="text" name="url" value="https://github.com/mandbjp/dotinstalled_ruby_on_rails.git"><br><br>
   <input type="submit" value="Submit">
@@ -48,51 +51,11 @@ def clone():
     return body
 
 
-def get_git_clone_mq():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=str('localhost')))
-    channel = connection.channel()
-
-    channel.queue_declare(queue='git_clone')
-
-    print(' [*] Waiting for messages. To exit press CTRL+C')
-
-    def callback(ch, method, properties, body):
-        body = json.loads(body)
-        url = body["url"]
-
-        import hashlib
-        hash = hashlib.md5(url).hexdigest()
-        clone_path = "/tmp/{hash}/".format(hash=hash)
-        if os.path.exists(clone_path):
-            print("removing path", clone_path)
-            shutil.rmtree(clone_path)
-        os.makedirs(clone_path)
-        shell("git clone {url}".format(url=url), clone_path)
-        send_mq("")
-
-    channel.basic_consume(callback, queue='git_clone', no_ack=True)
-
-    channel.start_consuming()
-    return "registed"
-
-
-@app.route('/send')
-@response_json
-def send():
-    send_mq()
-    return
-
-
-@app.route('/get')
-@response_json
-def get():
-    get_mq()
-    return
-
-
 def send_mq(queue, body):
     import pika
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=str('localhost')))
+
+    credentials = pika.PlainCredentials('rabbit_test', 'rabbit_test') if config.release else None
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host(), credentials=credentials))
     channel = connection.channel()
 
     channel.queue_declare(queue=queue)
@@ -102,22 +65,6 @@ def send_mq(queue, body):
                           body=json.dumps(body))
     print(" [x] Sent ")
     connection.close()
-
-
-def get_mq():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=str('localhost')))
-    channel = connection.channel()
-
-    channel.queue_declare(queue='hello')
-
-    print(' [*] Waiting for messages. To exit press CTRL+C')
-
-    def callback(ch, method, properties, body):
-        print(" [x] Received %r" % (body,))
-
-    channel.basic_consume(callback, queue='hello', no_ack=True)
-
-    channel.start_consuming()
 
 
 def shell(cmd, path):
@@ -133,9 +80,47 @@ class MqReceiver(threading.Thread):
         super(MqReceiver, self).__init__()
 
     def run(self):
-        get_git_clone_mq()
+        credentials = pika.PlainCredentials('rabbit_test', 'rabbit_test')
+        connection = None
+        if config.release:
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host(), credentials=credentials))
+        else:
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()))
+
+        channel = connection.channel()
+
+        channel.queue_declare(queue='git_clone')
+
+        print(' [*] Waiting for messages. To exit press CTRL+C')
+
+        def callback(ch, method, properties, body):
+            body = json.loads(body)
+            url = body["url"]
+
+            import hashlib
+            hash = hashlib.md5(url).hexdigest()
+            clone_path = "/tmp/{hash}/".format(hash=hash)
+            if os.path.exists(clone_path):
+                print("removing path", clone_path)
+                shutil.rmtree(clone_path)
+            os.makedirs(clone_path)
+            shell("git clone {url}".format(url=url), clone_path)
+            # send_mq("")
+
+        channel.basic_consume(callback, queue='git_clone', no_ack=True)
+
+        channel.start_consuming()
+
+
+def get_mq_host():
+    host = str(config.db_host) if config.release else str("localhost")
+    return host
+
 
 if __name__ == '__main__':
+    config.release = (len(sys.argv) == 2)
+    print("release?", config.release)
+
     mq_receiver = MqReceiver()
     mq_receiver.start()
 
