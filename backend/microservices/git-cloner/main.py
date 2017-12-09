@@ -50,37 +50,11 @@ def clone():
     return body
 
 
-def get_git_clone_mq():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()))
-    channel = connection.channel()
-
-    channel.queue_declare(queue='git_clone')
-
-    print(' [*] Waiting for messages. To exit press CTRL+C')
-
-    def callback(ch, method, properties, body):
-        body = json.loads(body)
-        url = body["url"]
-
-        import hashlib
-        hash = hashlib.md5(url).hexdigest()
-        clone_path = "/tmp/{hash}/".format(hash=hash)
-        if os.path.exists(clone_path):
-            print("removing path", clone_path)
-            shutil.rmtree(clone_path)
-        os.makedirs(clone_path)
-        shell("git clone {url}".format(url=url), clone_path)
-        # send_mq("")
-
-    channel.basic_consume(callback, queue='git_clone', no_ack=True)
-
-    channel.start_consuming()
-    return "registed"
-
-
 def send_mq(queue, body):
     import pika
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()))
+
+    credentials = pika.PlainCredentials('rabbit_test', 'rabbit_test') if config.release else None
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()), credentials=credentials)
     channel = connection.channel()
 
     channel.queue_declare(queue=queue)
@@ -105,7 +79,34 @@ class MqReceiver(threading.Thread):
         super(MqReceiver, self).__init__()
 
     def run(self):
-        get_git_clone_mq()
+        credentials = pika.PlainCredentials('rabbit_test', 'rabbit_test') if config.release else None
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()), credentials=credentials)
+        channel = connection.channel()
+
+        channel.queue_declare(queue='git_clone')
+
+        print(' [*] Waiting for messages. To exit press CTRL+C')
+
+        def callback(ch, method, properties, body):
+            body = json.loads(body)
+            url = body["url"]
+
+            import hashlib
+            hash = hashlib.md5(url).hexdigest()
+            clone_path = "/tmp/{hash}/".format(hash=hash)
+            if os.path.exists(clone_path):
+                print("removing path", clone_path)
+                shutil.rmtree(clone_path)
+            os.makedirs(clone_path)
+            shell("git clone {url}".format(url=url), clone_path)
+            # send_mq("")
+
+        channel.basic_consume(callback, queue='git_clone', no_ack=True)
+
+        channel.start_consuming()
+
+    def callback(self):
+
 
 
 def get_mq_host():
