@@ -44,8 +44,14 @@ def index():
 @response_json
 def clone():
     url = request.form['url']
+
+    import datetime, time
+    now = datetime.datetime.now()
+    session = int(time.mktime(now.timetuple()))
+
     body = {
-        "url": url
+        "url": url,
+        "session": session
     }
     send_mq("git_clone", body)
     return body
