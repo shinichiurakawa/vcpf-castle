@@ -60,7 +60,9 @@ class MqReceiver():
             body = json.loads(body)
             print(body)
             content = search_and_load(body["path"])
+            print("inserting...")
             insert_to_db(content, body["session"])
+            print("committed")
 
         channel.basic_consume(callback, queue='git_scrap', no_ack=True)
 
