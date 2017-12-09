@@ -1,12 +1,25 @@
 
+.container {
+    /* width: 100%; */
+    text-align: center;
+}
+
 .frame > div {
-    border: 1px dotted gray;
-    width: 640px;
+    /* border: 1px dotted gray; */
+    width: 100%;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center center; 
 }
 
+.frame {
+    width: 579px;
+    background-color: #00c624;
+    background-image: url("images/bg.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: top center;
+}
 .castle {
     height: 400px;
 }
