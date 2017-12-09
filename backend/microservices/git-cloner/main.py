@@ -54,7 +54,7 @@ def send_mq(queue, body):
     import pika
 
     credentials = pika.PlainCredentials('rabbit_test', 'rabbit_test') if config.release else None
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()), credentials=credentials)
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host(), credentials=credentials))
     channel = connection.channel()
 
     channel.queue_declare(queue=queue)
@@ -80,7 +80,7 @@ class MqReceiver(threading.Thread):
 
     def run(self):
         credentials = pika.PlainCredentials('rabbit_test', 'rabbit_test') if config.release else None
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()), credentials=credentials)
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host(), credentials=credentials))
         channel = connection.channel()
 
         channel.queue_declare(queue='git_clone')
