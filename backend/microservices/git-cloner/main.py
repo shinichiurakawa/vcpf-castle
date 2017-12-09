@@ -105,9 +105,6 @@ class MqReceiver(threading.Thread):
 
         channel.start_consuming()
 
-    def callback(self):
-
-
 
 def get_mq_host():
     host = str(config.db_host) if config.release else str("localhost")
