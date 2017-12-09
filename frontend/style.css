@@ -1,0 +1,15 @@
+
+.frame > div {
+    border: 1px solid gray;
+    width: 640px;
+    background-size: contain;
+    background-repeat: no-repeat;
+}
+
+.castle {
+    height: 400px;
+}
+
+.wall, .garden, .sky {
+    height: 200px;
+}
