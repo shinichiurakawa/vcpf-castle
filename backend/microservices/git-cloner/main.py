@@ -31,7 +31,7 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return """
-<form action="/api/clone" method="POST">
+<form action="/git/clone" method="POST">
   URL:<br>
   <input type="text" name="url" value="https://github.com/mandbjp/dotinstalled_ruby_on_rails.git"><br><br>
   <input type="submit" value="Submit">
