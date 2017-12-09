@@ -13,6 +13,8 @@ import pika
 import json
 import threading
 
+import config
+
 
 def response_json(func):
     import functools
@@ -49,7 +51,7 @@ def clone():
 
 
 def get_git_clone_mq():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=str('localhost')))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()))
     channel = connection.channel()
 
     channel.queue_declare(queue='git_clone')
@@ -68,7 +70,7 @@ def get_git_clone_mq():
             shutil.rmtree(clone_path)
         os.makedirs(clone_path)
         shell("git clone {url}".format(url=url), clone_path)
-        send_mq("")
+        # send_mq("")
 
     channel.basic_consume(callback, queue='git_clone', no_ack=True)
 
@@ -76,23 +78,9 @@ def get_git_clone_mq():
     return "registed"
 
 
-@app.route('/send')
-@response_json
-def send():
-    send_mq()
-    return
-
-
-@app.route('/get')
-@response_json
-def get():
-    get_mq()
-    return
-
-
 def send_mq(queue, body):
     import pika
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=str('localhost')))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()))
     channel = connection.channel()
 
     channel.queue_declare(queue=queue)
@@ -102,22 +90,6 @@ def send_mq(queue, body):
                           body=json.dumps(body))
     print(" [x] Sent ")
     connection.close()
-
-
-def get_mq():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=str('localhost')))
-    channel = connection.channel()
-
-    channel.queue_declare(queue='hello')
-
-    print(' [*] Waiting for messages. To exit press CTRL+C')
-
-    def callback(ch, method, properties, body):
-        print(" [x] Received %r" % (body,))
-
-    channel.basic_consume(callback, queue='hello', no_ack=True)
-
-    channel.start_consuming()
 
 
 def shell(cmd, path):
@@ -135,7 +107,15 @@ class MqReceiver(threading.Thread):
     def run(self):
         get_git_clone_mq()
 
+
+def get_mq_host():
+    host = str(config.db_host) if config.release else str("localhost")
+    return host
+
+
 if __name__ == '__main__':
+    print("release?", config.release)
+
     mq_receiver = MqReceiver()
     mq_receiver.start()
 
