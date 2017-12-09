@@ -9,21 +9,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
   <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
     crossorigin="anonymous">
 </head>
 
 <body>
-  <h1>CASTLE FLOW</h1>
-
-  <div class="container">
-    <div class="frame">
-      <div class="castle"></div>
-      <div class="wall"></div>
-      <div class="garden"></div>
+  <!-- Main jumbotron for a primary marketing message or call to action -->
+  <div class="jumbotron">
+    <div class="container">
+      <h1 class="display-3">CASTLE FLOW</h1>
+      <p>CASTLE FLOWは 自分の日々の勉強、開発成果物を可視化して自分だけのお城を作る。インンプットの量でお庭の花壇に花が咲く アウトプットの量でお城がどんどん豪華になるよ あなただけのお城を作ってみんなに自慢しよう！</p>
     </div>
   </div>
+
+  <div class="container">
+    <!-- Example row of columns -->
+    <div class="row">
+      <div class="col-md-4">
+        <h2>GitHub</h2>
+        <p>GitHubからお城が見えるよ。リポジトリのURLを貼り付けてCloneを押すだけ。やってみよう。
+        </p>
+        <p>
+          <form action="/git/clone" method="POST">
+            <input type="text" class="form-control" name="url" placeholder="https://github.com/shinichiurakawa/vcpf-castle" aria-describedby="basic-addon1">
+            <input class="btn btn-secondary" type="submit" value="Clone!">
+          </form>
+        </p>
+      </div>
+    </div>
+
+    <hr>
+
+    <footer>
+      <p>&copy; ERI Hackday 2017</p>
+    </footer>
+  </div>
+  <!-- /container -->
 
   <!-- Optional JavaScript -->
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -33,7 +54,6 @@
     crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
     crossorigin="anonymous"></script>
-  <script src="script.js"></script>
 </body>
 
 </html>
