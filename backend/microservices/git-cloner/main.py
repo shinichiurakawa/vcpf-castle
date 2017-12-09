@@ -14,7 +14,7 @@ import json
 import threading
 
 import config
-
+import sys
 
 def response_json(func):
     import functools
@@ -112,6 +112,7 @@ def get_mq_host():
 
 
 if __name__ == '__main__':
+    config.release = (len(sys.argv) == 2)
     print("release?", config.release)
 
     mq_receiver = MqReceiver()
