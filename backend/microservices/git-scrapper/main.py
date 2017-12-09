@@ -93,7 +93,9 @@ def insert_to_db(scrap_content, session):
     # Query the database and obtain data as Python objects
     cur.execute("SELECT MAX(id) FROM scraping;")
     ret = cur.fetchone()
-    no = ret[0] + 1
+    no = 0
+    if ret is not None:
+        no = ret[0] + 1
     cur.execute("INSERT INTO scraping (id, session_id, contents) VALUES (%s, %s, %s)", (no, session, scrap_content, ))
 
     # Make the changes to the database persistent
