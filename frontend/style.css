@@ -1,15 +1,22 @@
 
 .frame > div {
-    border: 1px solid gray;
+    border: 1px dotted gray;
     width: 640px;
     background-size: contain;
     background-repeat: no-repeat;
+    background-position: center center; 
 }
 
 .castle {
     height: 400px;
 }
-
-.wall, .garden, .sky {
+.wall, .garden {
     height: 200px;
+}
+
+.wall {
+    margin-top: -100px;
+}
+.garden {
+    margin-top: -60px;
 }
