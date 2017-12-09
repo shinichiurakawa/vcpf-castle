@@ -16,6 +16,7 @@ import threading
 import config
 import sys
 
+
 def response_json(func):
     import functools
     @functools.wraps(func)
@@ -79,8 +80,13 @@ class MqReceiver(threading.Thread):
         super(MqReceiver, self).__init__()
 
     def run(self):
-        credentials = pika.PlainCredentials('rabbit_test', 'rabbit_test') if config.release else None
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host(), credentials=credentials))
+        credentials = pika.PlainCredentials('rabbit_test', 'rabbit_test')
+        connection = None
+        if config.release:
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host(), credentials=credentials))
+        else:
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host=get_mq_host()))
+
         channel = connection.channel()
 
         channel.queue_declare(queue='git_clone')
