@@ -83,7 +83,9 @@ def search_and_load(path):
 
 def insert_to_db(scrap_content, session):
     # Connect to an existing database
+    print("connecting...", get_psql_connection_info())
     conn = psycopg2.connect(get_psql_connection_info())
+    print("connected!")
 
     # Open a cursor to perform database operations
     cur = conn.cursor()
