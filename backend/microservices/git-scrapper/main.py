@@ -94,7 +94,7 @@ def insert_to_db(scrap_content, session):
     cur.execute("SELECT MAX(id) FROM scraping;")
     ret = cur.fetchone()
     no = 0
-    if ret is not None:
+    if ret[0] is not None:
         no = ret[0] + 1
     cur.execute("INSERT INTO scraping (id, session_id, contents) VALUES (%s, %s, %s)", (no, session, scrap_content, ))
 
